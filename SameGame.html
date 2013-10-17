@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC
+   "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+   <head>
+      <script src = "Color.js"></script>
+      <script src = "Tile.js"></script>
+   </head>
+   <body>
+      <svg xmlns="http://www.w3.org/2000/svg"></svg>
+      <div>Score: <span id="score" /></div>
+      <button type = "button" onclick = "newGame()">New Game</button>
+
+      <script type="text/javascript">
+      <!--
+
+var NUM_ROWS = 10;
+var NUM_COLUMNS = 20;
+
+var span = document.getElementById("score");
+var svg = document.body.getElementsByTagName("svg")[0];
+
+svg.setAttribute("width", NUM_COLUMNS * Tile.SIZE);
+svg.setAttribute("height", NUM_ROWS * Tile.SIZE);
+
+var colors = [Color.NONE, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.ORANGE];
+
+var user, numChains;
+
+var grid = new Array(NUM_ROWS);
+
+for(var row = 0; row < NUM_ROWS; row++) {
+   grid[row] = new Array(NUM_COLUMNS);
+}
+
+newGame();
+
+function newGame() {
+   user = 0;
+   span.innerHTML = user;
+
+   var tile, point, func;
+
+   for(var row = 0; row < NUM_ROWS; row++) {
+      for(var column = 0; column < NUM_COLUMNS; column++) {
+         if(grid[row][column] != undefined) {
+            grid[row][column].detachFrom(svg);
+            grid[row][column] = undefined;
+         }
+
+         // random number between 1 and 5
+         point = Math.floor((Math.random() * 5) + 1);
+
+         tile = new Tile();
+
+         tile.setPoint(point);
+         tile.setColor(colors[point]);
+
+         tile.setXCoordinate(column * 20);
+         tile.setYCoordinate(row * 20);
+
+         func = new Function("score(" + row + ", " + column + ")");
+         tile.onClick(func);
+
+         tile.attachTo(svg);
+         grid[row][column] = tile;
+      }
+   }
+}
+
+
+function score(row, column) {
+   var point = grid[row][column].getPoint();
+
+   numChains = 1;
+
+   // remove tile
+   grid[row][column].detachFrom(svg);
+   grid[row][column] = undefined;
+
+   checkNeighbors(row, column, point);
+   compress();
+
+   user += ((point * numChains) * numChains);
+   span.innerHTML = user;
+}
+
+function checkNeighbors(row, column, point) {
+   check(row - 1, column, point); // above
+   check(row, column + 1, point); // right
+   check(row + 1, column, point); // below
+   check(row, column - 1, point); // left
+}
+
+function check(row, column, point) {
+   if((row < 0) || (row >= NUM_ROWS)) {
+      return;
+   }
+
+   if((column < 0) || (column >= NUM_COLUMNS)) {
+      return;
+   }
+
+   if(isChain(row, column, point)) {
+      numChains++;
+
+      // remove tile
+      grid[row][column].detachFrom(svg);
+      grid[row][column] = undefined;
+
+      checkNeighbors(row, column, point);
+   }
+}
+
+function isChain(row, column, point) {
+   if(grid[row][column] != undefined) {
+      return (grid[row][column].getPoint() == point);
+   }
+
+   return false;
+}
+
+function compress() {
+   var point, color, r, c, tile;
+
+   for(var column = 0; column < NUM_COLUMNS; column++) {
+      for(var row = NUM_ROWS - 1; row >= 0; row--) {
+         if(grid[row][column] == undefined) {
+            r = row - 1;
+
+            while(r >= 0) {
+               if(grid[r][column] != undefined) {
+                  tile = new Tile();
+
+                  tile.setXCoordinate(column * 20);
+                  tile.setYCoordinate(row * 20);
+
+                  func = new Function("score(" + row + ", " + column + ")");
+                  tile.onClick(func);
+
+                  point = grid[r][column].getPoint();
+                  tile.setPoint(point);
+
+                  color = grid[r][column].getColor();
+                  tile.setColor(color);
+
+                  tile.attachTo(svg);
+
+                  grid[row][column] = tile;
+
+                  grid[r][column].detachFrom(svg);
+                  grid[r][column] = undefined;
+
+                  r = 0;
+               }
+
+               r--;
+            }
+         }
+      }
+   }
+
+   for(var column = 0; column < NUM_COLUMNS; column++) {
+      if(grid[NUM_ROWS - 1][column] == undefined) {
+         c = column + 1;
+
+         while(c < NUM_COLUMNS) {
+            if(grid[NUM_ROWS - 1][c] != undefined) {
+               for(var row = 0; row < NUM_ROWS; row++) {
+                  if(grid[row][c] != undefined) {
+                     tile = new Tile();
+                     tile.attachTo(svg);
+
+                     grid[row][column] = tile;
+
+                     tile.setXCoordinate(column * 20);
+                     tile.setYCoordinate(row * 20);
+
+                     func = new Function("score(" + row + ", " + column + ")");
+                     tile.onClick(func);
+
+                     point = grid[row][c].getPoint();
+                     tile.setPoint(point);
+
+                     color = grid[row][c].getColor();
+                     tile.setColor(color);
+
+                     grid[row][c].detachFrom(svg);
+                     grid[row][c] = undefined;
+                  }
+               }
+
+               c = NUM_COLUMNS;
+            }
+
+            c++;
+         }
+      }
+   }
+}
+
+      //-->
+      </script>
+
+   </body>
+</html>
