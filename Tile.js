@@ -41,6 +41,15 @@ function Tile(tile) {
 
    //this.group.setAttribute("transform", "translate(20, 20)");
    this.group.setAttribute("transform", ['translate(', this.x, ', ', this.y, ')'].join(''));
+
+   this.visible = false;
+   this.isVisible = Tile_isVisible
+
+   this.setRow = Tile_setRow;
+   this.getRow = Tile_getRow;
+
+   this.setColumn = Tile_setColumn;
+   this.getColumn = Tile_getColumn;
 }
 
 function Tile_getPoint() {
@@ -49,10 +58,12 @@ function Tile_getPoint() {
 
 function Tile_attachTo(svg) {
    svg.appendChild(this.group);
+   this.visible = true;
 }
 
 function Tile_detachFrom(svg) {
    svg.removeChild(this.group);
+   this.visible = false;
 }
 
 function Tile_setXCoordinate(x) {
@@ -88,4 +99,28 @@ function Tile_setColor(color) {
 
 function Tile_getColor() {
    return this.rect.getAttribute("fill");
+}
+
+function Tile_isVisible() {
+   return this.visible;
+}
+
+function Tile_isChainedTo(tile) {
+   return tile.isVisible() && (tile.getPoint() == this.point);
+}
+
+function Tile_getRow() {
+   return this.row;
+}
+
+function Tile_setRow(row) {
+   this.row = row;
+}
+
+function Tile_getColumn() {
+   return this.column;
+}
+
+function Tile_setColumn(column) {
+   this.column = column;
 }
